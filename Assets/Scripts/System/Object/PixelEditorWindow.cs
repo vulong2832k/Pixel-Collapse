@@ -39,6 +39,10 @@ public class PixelEditorWindow : EditorWindow
     private Color _selectedColor = Color.white;
     private Color[,] _colorGrid;
 
+    //Save
+    private string[] _savedObjects;
+    private int _selectedSavedIndex = -1;
+
     [MenuItem("Tools/Pixel Editor")]
     public static void Open()
     {
@@ -47,6 +51,7 @@ public class PixelEditorWindow : EditorWindow
     private void OnEnable()
     {
         LoadObjectList();
+        LoadSavedObjects();
 
         Shader shader = Shader.Find("Universal Render Pipeline/Lit");
 
@@ -68,12 +73,7 @@ public class PixelEditorWindow : EditorWindow
         GUILayout.Space(5);
         GUILayout.Label("Material Settings", EditorStyles.boldLabel);
 
-        _sharedMaterial = (Material)EditorGUILayout.ObjectField(
-            "Pixel Material",
-            _sharedMaterial,
-            typeof(Material),
-            false
-        );
+        _sharedMaterial = (Material)EditorGUILayout.ObjectField( "Pixel Material", _sharedMaterial, typeof(Material), false);
 
         if (_sharedMaterial == null)
         {
@@ -90,6 +90,40 @@ public class PixelEditorWindow : EditorWindow
         _selectedColor = EditorGUILayout.ColorField("Selected Color", _selectedColor);
 
         DrawGrid();
+
+        GUILayout.Space(5);
+
+        GUILayout.Label("Object Name", EditorStyles.boldLabel);
+        _objectName = EditorGUILayout.TextField("Name", _objectName);
+
+        GUILayout.Space(5);
+
+        GUILayout.Label("Saved Objects", EditorStyles.boldLabel);
+
+        if (_savedObjects != null && _savedObjects.Length > 0)
+        {
+            string[] names = Array.ConvertAll(_savedObjects, s => System.IO.Path.GetFileNameWithoutExtension(s));
+            _selectedSavedIndex = EditorGUILayout.Popup("Select Object", _selectedSavedIndex, names);
+
+            if (_selectedSavedIndex >= 0 && GUILayout.Button("Load Selected"))
+            {
+                LoadSelectedObject(_savedObjects[_selectedSavedIndex]);
+            }
+        }
+        else
+        {
+            GUILayout.Label("No saved objects found.");
+        }
+
+        GUILayout.Space(5);
+        GUILayout.Label("Saved Objects", EditorStyles.boldLabel);
+
+        GUILayout.BeginHorizontal();
+        if (GUILayout.Button("Refresh List"))
+        {
+            LoadSavedObjects();
+        }
+        GUILayout.EndHorizontal();
 
         GUILayout.Space(10);
 
@@ -247,6 +281,37 @@ public class PixelEditorWindow : EditorWindow
         string json = JsonUtility.ToJson(mapJSON, true);
         System.IO.File.WriteAllText($"Assets/Prefabs/{_objectName}.json", json);
         AssetDatabase.Refresh();
+    }
+    private void LoadSelectedObject(string path)
+    {
+        string json = System.IO.File.ReadAllText(path);
+        PixelMapJSON mapJSON = JsonUtility.FromJson<PixelMapJSON>(json);
+
+        _width = mapJSON.width;
+        _height = mapJSON.height;
+        InitGrid();
+
+        foreach (var pd in mapJSON.pixels)
+        {
+            int x = Mathf.RoundToInt(pd.x);
+            int y = Mathf.RoundToInt(pd.y);
+            if (x >= 0 && x < _width && y >= 0 && y < _height)
+            {
+                _colorGrid[x, y] = new Color(pd.r, pd.g, pd.b, pd.a);
+            }
+        }
+
+        _objectName = System.IO.Path.GetFileNameWithoutExtension(path);
+
+        Repaint();
+    }
+    private void LoadSavedObjects()
+    {
+        string path = "Assets/Prefabs/";
+        if (!System.IO.Directory.Exists(path))
+            System.IO.Directory.CreateDirectory(path);
+
+        _savedObjects = System.IO.Directory.GetFiles(path, "*.json");
     }
 }
 

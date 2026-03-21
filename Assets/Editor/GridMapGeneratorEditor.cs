@@ -2,7 +2,6 @@
 using System.IO;
 using UnityEditor;
 using UnityEngine;
-using UnityEngine.WSA;
 
 [CustomEditor(typeof(GridMapGenerator))]
 public class GridMapGeneratorEditor : Editor

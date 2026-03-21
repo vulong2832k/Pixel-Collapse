@@ -1,0 +1,17 @@
+{
+    "levelNumber": 1,
+    "spawnStart": {
+        "x": 30.0,
+        "y": 0.0,
+        "z": 20.0
+    },
+    "spawnEnd": {
+        "x": 0.0,
+        "y": 0.0,
+        "z": 20.0
+    },
+    "prefabNames": [
+        "Cell"
+    ],
+    "fallingObjects": []
+}
