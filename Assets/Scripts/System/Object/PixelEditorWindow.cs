@@ -279,7 +279,7 @@ public class PixelEditorWindow : EditorWindow
 
         // Chuyển thành JSON
         string json = JsonUtility.ToJson(mapJSON, true);
-        System.IO.File.WriteAllText($"Assets/Prefabs/{_objectName}.json", json);
+        System.IO.File.WriteAllText($"Assets/Prefabs//Objects/{_objectName}.json", json);
         AssetDatabase.Refresh();
     }
     private void LoadSelectedObject(string path)

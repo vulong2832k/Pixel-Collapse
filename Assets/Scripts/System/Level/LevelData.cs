@@ -5,6 +5,7 @@ using UnityEngine;
 [Serializable]
 public class LevelData
 {
+    public string towerPrefabName;
     //Level màn chơi
     public int levelNumber;
 

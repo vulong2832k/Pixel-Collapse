@@ -16,6 +16,16 @@ public class GridMapGeneratorEditor : Editor
     string[] mapFiles;
     int selectedMapIndex = -1;
 
+    private void OnEnable()
+    {
+        previewObject = null;
+        hasPreview = false;
+    }
+    private void OnDisable()
+    {
+        previewObject = null;
+        hasPreview = false;
+    }
     private void OnSceneGUI()
     {
         if (Tools.viewToolActive)
@@ -35,7 +45,7 @@ public class GridMapGeneratorEditor : Editor
             RebuildDataFromScene(gen);
         }
 
-        if (gen.MapRoot == null) return;
+        if (gen.MapRoot == null || gen.MapRoot.Equals(null)) return;
 
         Event e = Event.current;
 
