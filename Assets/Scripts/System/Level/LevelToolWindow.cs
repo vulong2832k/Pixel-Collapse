@@ -6,6 +6,7 @@ using System;
 
 public class LevelToolWindow : EditorWindow
 {
+    private Vector2 _scrollPos;
     //Map
     private string[] _mapFiles;
     private int _selectedMapIndex = 1;
@@ -21,7 +22,6 @@ public class LevelToolWindow : EditorWindow
 
     //List Prefabs spawn
     private List<GameObject> _objectPrefabs = new List<GameObject>();
-    private int _selectedPrefabIndex = 0;
 
     [MenuItem("Tools/Level Tool")]
     public static void ShowWindow()
@@ -34,6 +34,8 @@ public class LevelToolWindow : EditorWindow
     }
     private void OnGUI()
     {
+        _scrollPos = EditorGUILayout.BeginScrollView(_scrollPos);
+
         GUILayout.Label("=== MAP LIST ===", EditorStyles.boldLabel);
 
         if (GUILayout.Button("Refresh Map List"))
@@ -53,28 +55,147 @@ public class LevelToolWindow : EditorWindow
                     LoadMapAndData(_mapFiles[this._selectedMapIndex]);
             }
         }
+
         if (_currentLevelData != null)
         {
             GUILayout.Space(10);
             GUILayout.Label($"=== LEVEL {_currentLevelData.levelNumber} ===", EditorStyles.boldLabel);
 
-            GUILayout.Label("=== SPAWN LIMIT ===", EditorStyles.boldLabel);
-            _spawnStart = EditorGUILayout.Vector3Field("Spawn Start", _spawnStart);
-            _spawnEnd = EditorGUILayout.Vector3Field("Spawn End", _spawnEnd);
+            GUILayout.Space(5);
+            DrawSpawn();
 
-            GUILayout.Label("=== OBJECT PREFABS ===", EditorStyles.boldLabel);
-            if (GUILayout.Button("Add Prefab Slot")) _objectPrefabs.Add(null);
+            GUILayout.Space(5);
+            DrawPrefabs();
 
-            for (int i = 0; i < _objectPrefabs.Count; i++)
-            {
-                EditorGUILayout.BeginHorizontal();
-                _objectPrefabs[i] = (GameObject)EditorGUILayout.ObjectField(_objectPrefabs[i], typeof(GameObject), false);
-                if (GUILayout.Button("X", GUILayout.Width(20))) { _objectPrefabs.RemoveAt(i); i--; }
-                EditorGUILayout.EndHorizontal();
-            }
+            GUILayout.Space(5);
+            DrawTowerSlots();
 
+            GUILayout.Space(10);
+            DrawAvailableObjects();
+
+            GUILayout.Space(5);
+            DrawScore();
+
+            GUILayout.Space(10);
             if (GUILayout.Button("Save Level Data"))
-                SaveLevelData(_currentLevelData);
+                SaveLevelData();
+        }
+
+        EditorGUILayout.EndScrollView();
+    }
+    //-------------------------------------- DRAW UI ------------------------------------------------
+    private void DrawSpawn()
+    {
+        GUILayout.Label("=== SPAWN LIMIT ===", EditorStyles.boldLabel);
+        _spawnStart = EditorGUILayout.Vector3Field("Spawn Start", _spawnStart);
+        _spawnEnd = EditorGUILayout.Vector3Field("Spawn End", _spawnEnd);
+    }
+    private void DrawPrefabs()
+    {
+        GUILayout.Label("=== OBJECT PREFABS ===", EditorStyles.boldLabel);
+
+        if (GUILayout.Button("Add Prefab Slot")) 
+            this._objectPrefabs.Add(null);
+
+        for (int i = 0; i < _objectPrefabs.Count; i++)
+        {
+            EditorGUILayout.BeginHorizontal();
+            _objectPrefabs[i] = (GameObject)EditorGUILayout.ObjectField(_objectPrefabs[i], typeof(GameObject), false);
+            if (GUILayout.Button("X", GUILayout.Width(20))) { _objectPrefabs.RemoveAt(i); i--; }
+            EditorGUILayout.EndHorizontal();
+        }
+    }
+    private void DrawTowerSlots()
+    {
+        GUILayout.Label("=== TOWER POSITIONS ===", EditorStyles.boldLabel);
+
+        if (GUILayout.Button("Add Slot tower per level"))
+        {
+            this._currentLevelData.towerPos.Add(Vector3.zero);
+        }
+
+        for (int i = 0; i < _currentLevelData.towerPos.Count; i++)
+        {
+            EditorGUILayout.BeginHorizontal();
+            this._currentLevelData.towerPos[i] = EditorGUILayout.Vector3Field($"Slot {i}", _currentLevelData.towerPos[i]);
+
+            if (GUILayout.Button("X", GUILayout.Width(20)))
+            {
+                this._currentLevelData.towerPos.RemoveAt(i);
+                i--;
+            }
+            EditorGUILayout.EndHorizontal();
+        }
+    }
+    private void DrawAvailableObjects()
+    {
+        GUILayout.Label("=== AVAILABLE OBJECT ===", EditorStyles.boldLabel);
+
+        if (_currentLevelData.towerAvailableData == null)
+        {
+            if (GUILayout.Button("Create Available Object"))
+            {
+                _currentLevelData.towerAvailableData = new TowerAvailableData();
+            }
+            return;
+        }
+
+        var data = _currentLevelData.towerAvailableData;
+
+        EditorGUILayout.BeginVertical("box");
+
+        GameObject prefab = null;
+
+        if (!string.IsNullOrEmpty(data.prefabName))
+        {
+            prefab = AssetDatabase.LoadAssetAtPath<GameObject>(
+                $"Assets/Prefabs/Objects/{data.prefabName}.prefab");
+        }
+
+        prefab = (GameObject)EditorGUILayout.ObjectField("Prefab", prefab, typeof(GameObject), false);
+
+        if (prefab != null)
+            data.prefabName = prefab.name;
+
+        data.position = EditorGUILayout.Vector3Field("Position", data.position);
+        data.rotationY = EditorGUILayout.FloatField("Rotation Y", data.rotationY);
+
+        if (GUILayout.Button("Remove"))
+        {
+            _currentLevelData.towerAvailableData = null;
+        }
+
+        EditorGUILayout.EndVertical();
+    }
+    private void DrawScore()
+    {
+        if (_currentLevelData.scoreUpgrades == null)
+            _currentLevelData.scoreUpgrades = new List<int>();
+
+        while (_currentLevelData.scoreUpgrades.Count < 11)
+        {
+            _currentLevelData.scoreUpgrades.Add(0);
+        }
+
+        GUILayout.Label("=== SCORE ===", EditorStyles.boldLabel);
+
+        _currentLevelData.scoreToFinish =
+            EditorGUILayout.IntField("Score To Finish", _currentLevelData.scoreToFinish);
+
+        GUILayout.Space(5);
+        GUILayout.Label("=== SCORE UPGRADE ===", EditorStyles.boldLabel);
+
+        string[] levelOptions = new string[11];
+        for (int i = 0; i < 11; i++)
+        {
+            EditorGUILayout.BeginHorizontal("box");
+
+            GUILayout.Label($"Lv {i + 1}", GUILayout.Width(50));
+
+            _currentLevelData.scoreUpgrades[i] =
+                EditorGUILayout.IntField(_currentLevelData.scoreUpgrades[i]);
+
+            EditorGUILayout.EndHorizontal();
         }
     }
     private void RefreshMapList()
@@ -90,48 +211,81 @@ public class LevelToolWindow : EditorWindow
     }
     private void LoadMapAndData(string mapPath)
     {
-        // Lấy số map từ tên file map_{number}.json
         string mapName = Path.GetFileNameWithoutExtension(mapPath);
+
         int mapNumber = 0;
         string[] parts = mapName.Split('_');
+
         if (parts.Length > 1)
-        {
             int.TryParse(parts[1], out mapNumber);
-        }
 
-        //Load Level Data tương ứng với map từ map_{number}
-        string levelPath = this._levelFolder + $"level_{mapNumber}.json";
+        string levelPath = _levelFolder + $"Level_{mapNumber}.json";
 
+        // Load hoặc tạo mới
         if (File.Exists(levelPath))
         {
             string json = File.ReadAllText(levelPath);
-            this._currentLevelData = JsonUtility.FromJson<LevelData>(json);
+            _currentLevelData = JsonUtility.FromJson<LevelData>(json);
         }
         else
         {
-            this._currentLevelData = new LevelData { levelNumber = mapNumber };
+            _currentLevelData = new LevelData { levelNumber = mapNumber };
+        }
+
+        //Null
+        if (_currentLevelData.prefabNames == null)
+            _currentLevelData.prefabNames = new List<string>();
+
+        if (_currentLevelData.towerPos == null)
+            _currentLevelData.towerPos = new List<Vector3>();
+
+        if (_currentLevelData.scoreUpgrades == null)
+            _currentLevelData.scoreUpgrades = new List<int>();
+
+        // INIT 11 LEVEL SCORE
+        while (_currentLevelData.scoreUpgrades.Count < 11)
+        {
+            _currentLevelData.scoreUpgrades.Add(0);
+        }
+
+        // SYNC GUI
+        _spawnStart = _currentLevelData.spawnStart;
+        _spawnEnd = _currentLevelData.spawnEnd;
+
+        _objectPrefabs.Clear();
+
+        foreach (var prefabName in _currentLevelData.prefabNames)
+        {
+            GameObject go = AssetDatabase.LoadAssetAtPath<GameObject>(
+                $"Assets/Resources/Prefabs/{prefabName}.prefab");
+
+            _objectPrefabs.Add(go);
         }
     }
-    private void SaveLevelData(LevelData data)
+
+    private void SaveLevelData()
     {
-        // Đồng bộ prefab list
-        data.prefabNames.Clear();
+        if (_currentLevelData == null) return;
+
+        // Đồng bộ dữ liệu
+        _currentLevelData.spawnStart = this._spawnStart;
+        _currentLevelData.spawnEnd = this._spawnEnd;
+        _currentLevelData.prefabNames.Clear();
         foreach (var go in _objectPrefabs)
-            if (go != null) data.prefabNames.Add(go.name);
+        {
+            if (go != null)
+            {
+                _currentLevelData.prefabNames.Add(go.name);
+            }
+        }
 
-        // Đồng bộ Spawn Limit
-        data.spawnStart = _spawnStart;
-        data.spawnEnd = _spawnEnd;
+        if (!Directory.Exists(_levelFolder))
+            Directory.CreateDirectory(_levelFolder);
 
-        // Tạo thư mục nếu chưa có
-        if (!Directory.Exists(this._levelFolder))
-            Directory.CreateDirectory(this._levelFolder);
-
-        // Lưu JSON
-        string path = this._levelFolder + $"Level_{data.levelNumber}.json";
-        File.WriteAllText(path, JsonUtility.ToJson(data, true));
+        string path = _levelFolder + $"Level_{_currentLevelData.levelNumber}.json";
+        File.WriteAllText(path, JsonUtility.ToJson(_currentLevelData, true));
         AssetDatabase.Refresh();
 
-        Debug.Log("Save Data thành công");
+        Debug.Log($"Saved Level {_currentLevelData.levelNumber} with {_currentLevelData.prefabNames.Count} prefabs.");
     }
 }
