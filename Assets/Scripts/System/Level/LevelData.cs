@@ -5,7 +5,6 @@ using UnityEngine;
 [Serializable]
 public class LevelData
 {
-    public string towerPrefabName;
     //Level màn chơi
     public int levelNumber;
 
@@ -19,11 +18,18 @@ public class LevelData
     //Vị trí các tháp phá khối
     public List<Vector3> towerPos = new List<Vector3>();
 
-    //Vị trí tháp phá khối được đặt sẵn
-    public TowerAvailableData towerAvailableData;
-
     //Yêu cầu màn chơi
     public int scoreToFinish;
     public List<int> scoreUpgrades = new List<int>();
+
+    //Lượng máu để phá hủy 1 Cube
+    public float breakableMaxHP;
+
+    //Tower
+    public string towerPrefabName;
+    public float towerDamage;
+    public float towerAttackRate;
+    public float towerRange;
+
 }
 

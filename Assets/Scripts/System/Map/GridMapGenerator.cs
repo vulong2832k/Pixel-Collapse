@@ -139,6 +139,8 @@ public class GridMapGenerator : MonoBehaviour
         {
             bool found = false;
 
+            stack.RemoveAll(item => item == null);
+
             foreach (var w in stack)
             {
                 int wallHeight = Mathf.RoundToInt(w.transform.position.y / _cellSize);

@@ -1,54 +1,36 @@
 {
-    "towerPrefabName": "TowerEmpty",
     "levelNumber": 1,
     "spawnStart": {
         "x": 79.0,
-        "y": 0.5,
-        "z": 3.0
+        "y": 1.399999976158142,
+        "z": 22.0
     },
     "spawnEnd": {
         "x": 79.0,
-        "y": 0.5,
-        "z": 31.0
+        "y": 1.399999976158142,
+        "z": 13.0
     },
     "prefabNames": [
-        "Carot",
-        "Tao",
         "Apple"
     ],
-    "towerPos": [
-        {
-            "x": 17.155803680419923,
-            "y": 2.5,
-            "z": 9.810452461242676
-        },
-        {
-            "x": 15.281275749206543,
-            "y": 2.5,
-            "z": 5.8311381340026859
-        }
-    ],
-    "towerAvailableData": {
-        "prefabName": "Rotating_saw_obstacle",
-        "position": {
-            "x": 0.0,
-            "y": 0.0,
-            "z": 0.0
-        },
-        "rotationY": 0.0
-    },
-    "scoreToFinish": 0,
+    "towerPos": [],
+    "scoreToFinish": 45000,
     "scoreUpgrades": [
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0
-    ]
+        500,
+        700,
+        1000,
+        1500,
+        2200,
+        2900,
+        3550,
+        4600,
+        6000,
+        7500,
+        9000
+    ],
+    "breakableMaxHP": 10.0,
+    "towerPrefabName": "TowerEmpty",
+    "towerDamage": 0.0,
+    "towerAttackRate": 0.0,
+    "towerRange": 0.0
 }

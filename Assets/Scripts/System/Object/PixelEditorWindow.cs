@@ -178,10 +178,10 @@ public class PixelEditorWindow : EditorWindow
 
         for (int x = 0; x < _width; x++)
         {
-            for (int y = 0; y < _height; y++)
+            for (int z = 0; z < _height; z++)
             {
-                _grid[x, y] = -1;
-                _colorGrid[x, y] = Color.clear;
+                _grid[x, z] = -1;
+                _colorGrid[x, z] = Color.clear;
             }
         }
     }
@@ -213,25 +213,26 @@ public class PixelEditorWindow : EditorWindow
     private void DrawGrid()
     {
         GUILayout.Space(10);
-        GUILayout.Label("Grid", EditorStyles.boldLabel);
+        GUILayout.Label("Grid (Top-Down, Z-X Plane)", EditorStyles.boldLabel);
 
-        for (int y = 0; y < this._height; y++)
+        for (int x = 0; x < _width; x++)
         {
             GUILayout.BeginHorizontal();
 
-            for (int x = 0; x < this._width; x++)
+            for (int z = _height - 1; z >= 0; z--)
             {
-                DrawCell(x, y);
+                DrawCell(x, z);
             }
+
             GUILayout.EndHorizontal();
         }
     }
     //Xử lý từng ô để tạo hình prefab
-    private void DrawCell(int x, int y)
+    private void DrawCell(int x, int z)
     {
         Rect rect = GUILayoutUtility.GetRect(30, 30);
 
-        Color cellColor = _colorGrid[x, y];
+        Color cellColor = _colorGrid[x, z];
         Color drawColor = cellColor == Color.clear ? new Color(0.2f, 0.2f, 0.2f) : cellColor;
 
         EditorGUI.DrawRect(rect, drawColor);
@@ -240,11 +241,11 @@ public class PixelEditorWindow : EditorWindow
         {
             if (Event.current.button == 1)
             {
-                _colorGrid[x, y] = Color.clear;
+                _colorGrid[x, z] = Color.clear;
             }
             else
             {
-                _colorGrid[x, y] = _selectedColor;
+                _colorGrid[x, z] = _selectedColor;
             }
 
             Repaint();
@@ -259,15 +260,15 @@ public class PixelEditorWindow : EditorWindow
 
         for (int x = 0; x < _width; x++)
         {
-            for (int y = 0; y < _height; y++)
+            for (int z = 0; z < _height; z++)
             {
-                Color color = _colorGrid[x, y];
+                Color color = _colorGrid[x, z];
                 if (color == Color.clear) continue;
 
                 PixelData pd = new PixelData();
                 pd.x = x;
-                pd.y = y;
-                pd.z = 0;
+                pd.y = 0;
+                pd.z = z;
                 pd.r = color.r;
                 pd.g = color.g;
                 pd.b = color.b;
@@ -277,9 +278,8 @@ public class PixelEditorWindow : EditorWindow
             }
         }
 
-        // Chuyển thành JSON
         string json = JsonUtility.ToJson(mapJSON, true);
-        System.IO.File.WriteAllText($"Assets/Prefabs//Objects/{_objectName}.json", json);
+        System.IO.File.WriteAllText($"Assets/Resources/Prefabs/Objects/{_objectName}.json", json);
         AssetDatabase.Refresh();
     }
     private void LoadSelectedObject(string path)
@@ -294,10 +294,10 @@ public class PixelEditorWindow : EditorWindow
         foreach (var pd in mapJSON.pixels)
         {
             int x = Mathf.RoundToInt(pd.x);
-            int y = Mathf.RoundToInt(pd.y);
-            if (x >= 0 && x < _width && y >= 0 && y < _height)
+            int z = Mathf.RoundToInt(pd.z);
+            if (x >= 0 && x < _width && z >= 0 && z < _height)
             {
-                _colorGrid[x, y] = new Color(pd.r, pd.g, pd.b, pd.a);
+                _colorGrid[x, z] = new Color(pd.r, pd.g, pd.b, pd.a);
             }
         }
 
@@ -307,7 +307,7 @@ public class PixelEditorWindow : EditorWindow
     }
     private void LoadSavedObjects()
     {
-        string path = "Assets/Prefabs/";
+        string path = "Assets/Resources/Prefabs/Objects";
         if (!System.IO.Directory.Exists(path))
             System.IO.Directory.CreateDirectory(path);
 

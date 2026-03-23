@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using System.Collections;
+using UnityEngine;
 
 public class LevelLoader : MonoBehaviour
 {
@@ -19,7 +20,10 @@ public class LevelLoader : MonoBehaviour
 
         LoadMap(_levelData.levelNumber);
         SpawnTowers();
+
+        StartCoroutine(SpawnObjectsRoutine());
     }
+
     GameObject GetTowerPrefab(string name)
     {
         if (towerDatabase == null) return null;
@@ -32,6 +36,7 @@ public class LevelLoader : MonoBehaviour
 
         return null;
     }
+
     void LoadLevel()
     {
         TextAsset levelJson = Resources.Load<TextAsset>($"Gameplay/Levels/Level_{levelNumber}");
@@ -88,6 +93,73 @@ public class LevelLoader : MonoBehaviour
         foreach (var pos in _levelData.towerPos)
         {
             Instantiate(prefab, pos, Quaternion.identity);
+        }
+    }
+
+    //------------------- SPAWN PIXELOBJECT AUTO -------------------
+
+    private IEnumerator SpawnObjectsRoutine()
+    {
+        if (_levelData == null || _levelData.prefabNames == null || _levelData.prefabNames.Count == 0)
+            yield break;
+
+        while (true)
+        {
+            string objName = _levelData.prefabNames[Random.Range(0, _levelData.prefabNames.Count)];
+            SpawnPixelObject(objName);
+
+            yield return new WaitForSeconds(5f);
+        }
+    }
+
+    private void SpawnPixelObject(string jsonName)
+    {
+        TextAsset txt = Resources.Load<TextAsset>($"Prefabs/Objects/{jsonName}");
+        if (txt == null) return;
+
+        PixelMapJSON map = JsonUtility.FromJson<PixelMapJSON>(txt.text);
+
+        Vector3 randomPos = new Vector3(
+            Random.Range(_levelData.spawnStart.x, _levelData.spawnEnd.x),
+            Random.Range(_levelData.spawnStart.y, _levelData.spawnEnd.y),
+            Random.Range(_levelData.spawnStart.z, _levelData.spawnEnd.z)
+        );
+
+        GameObject parent = new GameObject("PixelObject_" + jsonName);
+        parent.transform.position = randomPos;
+
+        Rigidbody rb = parent.AddComponent<Rigidbody>();
+        rb.useGravity = false;
+        rb.mass = 1000f;
+        rb.constraints = RigidbodyConstraints.FreezePositionY | RigidbodyConstraints.FreezeRotationX | RigidbodyConstraints.FreezeRotationZ;
+
+        var fgParent = parent.AddComponent<FakeGravityX>();
+        fgParent.gravity = 4f;
+
+        var runtime = parent.AddComponent<PixelObjectRuntime>();
+
+        Material sharedMat = new Material(Shader.Find("Universal Render Pipeline/Lit"));
+
+        foreach (var pixel in map.pixels)
+        {
+            Vector3 localPos = new Vector3(pixel.x, 0, pixel.z);
+
+            GameObject cube = GameObject.CreatePrimitive(PrimitiveType.Cube);
+            cube.transform.SetParent(parent.transform);
+            cube.transform.localPosition = localPos;
+            cube.transform.localScale = Vector3.one * 0.95f;
+            cube.layer = LayerMask.NameToLayer("Pixel");
+
+            Renderer r = cube.GetComponent<Renderer>();
+            r.sharedMaterial = sharedMat;
+            MaterialPropertyBlock mpb = new MaterialPropertyBlock();
+            mpb.SetColor("_BaseColor", new Color(pixel.r, pixel.g, pixel.b, pixel.a));
+            r.SetPropertyBlock(mpb);
+
+            var breakable = cube.AddComponent<BreakableCube>();
+            breakable.maxHP = _levelData != null ? _levelData.breakableMaxHP : 10f;
+
+            runtime.RegisterCube(new Vector2Int((int)pixel.x, (int)pixel.z), cube);
         }
     }
 }

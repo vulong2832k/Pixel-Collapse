@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using UnityEditor;
 using UnityEngine;
@@ -16,6 +17,11 @@ public class GridMapGeneratorEditor : Editor
     string[] mapFiles;
     int selectedMapIndex = -1;
 
+    private bool _isDraggingWall = false;
+    private Vector3Int _dragStartPos;
+    private Vector3Int _dragEndPos;
+    private List<Vector3Int> _dragPositions = new List<Vector3Int>();
+
     private void OnEnable()
     {
         previewObject = null;
@@ -29,14 +35,11 @@ public class GridMapGeneratorEditor : Editor
     private void OnSceneGUI()
     {
         if (Tools.viewToolActive)
-        {
             return;
-        }
 
         if (Event.current.type == EventType.MouseMove)
-        {
             SceneView.RepaintAll();
-        }
+
         GridMapGenerator gen = (GridMapGenerator)target;
 
         if (!gen.IsInitialized() || gen.CellsSizeMismatch())
@@ -48,7 +51,6 @@ public class GridMapGeneratorEditor : Editor
         if (gen.MapRoot == null || gen.MapRoot.Equals(null)) return;
 
         Event e = Event.current;
-
         HandleUtility.AddDefaultControl(GUIUtility.GetControlID(FocusType.Passive));
 
         Ray ray = HandleUtility.GUIPointToWorldRay(e.mousePosition);
@@ -64,7 +66,8 @@ public class GridMapGeneratorEditor : Editor
                 previewPos = new Vector3(
                     Mathf.RoundToInt(p.x / gen.CellSize) * gen.CellSize,
                     Mathf.RoundToInt(p.y / gen.CellSize) * gen.CellSize,
-                    Mathf.RoundToInt(p.z / gen.CellSize) * gen.CellSize);
+                    Mathf.RoundToInt(p.z / gen.CellSize) * gen.CellSize
+                );
 
                 hasPreview = true;
             }
@@ -72,14 +75,81 @@ public class GridMapGeneratorEditor : Editor
             {
                 hasPreview = false;
             }
-            // BUILD WALL MODE
+
+            // ===================== BUILD WALL MODE =====================
             if (gen.Mode == GridMapGenerator.EditMode.BuildWall)
             {
-                // LEFT CLICK: ADD WALL
-                if (e.type == EventType.MouseDown && e.button == 0)
+                // Ctrl + Left Click: bắt đầu drag
+                if (e.type == EventType.MouseDown && e.button == 0 && e.control)
+                {
+                    Vector3 pos = hit.collider.transform.position;
+                    int x = Mathf.RoundToInt(pos.x / gen.CellSize);
+                    int z = Mathf.RoundToInt(pos.z / gen.CellSize);
+
+                    _dragStartPos = new Vector3Int(x, 0, z);
+                    _isDraggingWall = true;
+                    _dragPositions.Clear();
+                    e.Use();
+                }
+
+                // Kéo chuột (preview)
+                if (_isDraggingWall && (e.type == EventType.MouseDrag || e.type == EventType.MouseMove))
+                {
+                    Vector3 pos = hit.collider.transform.position;
+                    int x = Mathf.RoundToInt(pos.x / gen.CellSize);
+                    int z = Mathf.RoundToInt(pos.z / gen.CellSize);
+
+                    _dragEndPos = new Vector3Int(x, 0, z);
+
+                    // Vẽ preview line
+                    Handles.color = Color.green;
+                    Handles.DrawLine(
+                        new Vector3(_dragStartPos.x * gen.CellSize, 0, _dragStartPos.z * gen.CellSize),
+                        new Vector3(_dragEndPos.x * gen.CellSize, 0, _dragEndPos.z * gen.CellSize)
+                    );
+                }
+
+                // Thả chuột: tạo wall theo drag
+                if (_isDraggingWall && e.type == EventType.MouseUp && e.button == 0)
+                {
+                    int startX = Mathf.Min(_dragStartPos.x, _dragEndPos.x);
+                    int endX = Mathf.Max(_dragStartPos.x, _dragEndPos.x);
+                    int startZ = Mathf.Min(_dragStartPos.z, _dragEndPos.z);
+                    int endZ = Mathf.Max(_dragStartPos.z, _dragEndPos.z);
+
+                    // Nếu kéo theo trục X
+                    if (_dragStartPos.z == _dragEndPos.z)
+                    {
+                        for (int x = startX; x <= endX; x++)
+                        {
+                            if (!_dragPositions.Contains(new Vector3Int(x, 0, _dragStartPos.z)))
+                            {
+                                gen.AddWall(x, _dragStartPos.z);
+                                _dragPositions.Add(new Vector3Int(x, 0, _dragStartPos.z));
+                            }
+                        }
+                    }
+                    // Nếu kéo theo trục Z
+                    else if (_dragStartPos.x == _dragEndPos.x)
+                    {
+                        for (int z = startZ; z <= endZ; z++)
+                        {
+                            if (!_dragPositions.Contains(new Vector3Int(_dragStartPos.x, 0, z)))
+                            {
+                                gen.AddWall(_dragStartPos.x, z);
+                                _dragPositions.Add(new Vector3Int(_dragStartPos.x, 0, z));
+                            }
+                        }
+                    }
+
+                    _isDraggingWall = false;
+                    e.Use();
+                }
+
+                // Left Click bình thường: thêm 1 wall
+                if (e.type == EventType.MouseDown && e.button == 0 && !e.control)
                 {
                     Vector3 spawnPos = hit.point;
-
                     spawnPos.x = Mathf.Round(spawnPos.x / gen.CellSize) * gen.CellSize;
                     spawnPos.z = Mathf.Round(spawnPos.z / gen.CellSize) * gen.CellSize;
                     spawnPos.y = 0;
@@ -92,17 +162,16 @@ public class GridMapGeneratorEditor : Editor
                     e.Use();
                 }
 
-                // RIGHT CLICK: REMOVE WALL
+                // Right Click: remove wall
                 if (e.type == EventType.MouseDown && e.button == 1 && !Tools.viewToolActive)
                 {
                     GameObject obj = hit.collider.gameObject;
-
                     gen.RemoveWallByObject(obj);
                     e.Use();
                 }
             }
 
-            // PAINT GROUND MODE
+            // ===================== PAINT GROUND MODE =====================
             if (gen.Mode == GridMapGenerator.EditMode.PaintGround)
             {
                 int x = Mathf.RoundToInt(previewPos.x / gen.CellSize);
@@ -111,41 +180,34 @@ public class GridMapGeneratorEditor : Editor
                 if (x < 0 || x >= gen.Width || z < 0 || z >= gen.Height)
                     return;
 
-                //LEFT CLICK: PAINT
+                // Left Click hoặc Drag: Paint
                 if ((e.type == EventType.MouseDown || e.type == EventType.MouseDrag) && e.button == 0)
                 {
                     GridCell gridCell = gen.GetCell(x, z);
-
                     if (gridCell != null)
-                    {
                         ReplaceCell(gen, x, z, gen.SelectedGround);
-                    }
                     else
-                    {
                         CreateCell(gen, x, z, gen.SelectedGround);
-                    }
-                        e.Use();
+
+                    e.Use();
                 }
-                //RIGHT CLICK: DELETE
+
+                // Right Click hoặc Drag: Delete
                 if ((e.type == EventType.MouseDown || e.type == EventType.MouseDrag) && e.button == 1)
                 {
                     GridCell gridCell = gen.GetCell(x, z);
-
                     if (gridCell != null)
-                    {
                         DeleteCell(gen, x, z);
-                    }
 
                     e.Use();
                 }
             }
-            
         }
 
+        // Preview cube
         if (hasPreview)
         {
             Handles.DrawWireCube(previewPos, Vector3.one * gen.CellSize);
-
             Handles.color = new Color(0, 1, 0, 0.1f);
             Handles.CubeHandleCap(0, previewPos, Quaternion.identity, gen.CellSize, EventType.Repaint);
         }

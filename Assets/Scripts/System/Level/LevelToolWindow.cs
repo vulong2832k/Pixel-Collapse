@@ -17,6 +17,8 @@ public class LevelToolWindow : EditorWindow
 {
     private Vector2 _scrollPos;
 
+    [SerializeField] private Material _pixelSharedMaterial;
+
     // Map
     private string[] _mapFiles;
     private int _selectedMapIndex = 1;
@@ -32,7 +34,6 @@ public class LevelToolWindow : EditorWindow
     // List Object Spawn
     private List<SpawnObjectEntry> _spawnObjects = new List<SpawnObjectEntry>();
     private string[] _pixelObjectFiles;
-    private int _selectedPixelObjectIndex = 0;
 
     // Tower
     private bool _isPlacingTower = false;
@@ -81,6 +82,9 @@ public class LevelToolWindow : EditorWindow
             GUILayout.Label($"=== LEVEL {_currentLevelData.levelNumber} ===", EditorStyles.boldLabel);
 
             GUILayout.Space(5);
+            _currentLevelData.breakableMaxHP = EditorGUILayout.FloatField("Breakable HP", _currentLevelData.breakableMaxHP);
+
+            GUILayout.Space(5);
             DrawSpawn();
 
             GUILayout.Space(5);
@@ -88,9 +92,6 @@ public class LevelToolWindow : EditorWindow
 
             GUILayout.Space(5);
             DrawTowerSlots();
-
-            GUILayout.Space(10);
-            DrawAvailableObjects();
 
             GUILayout.Space(5);
             DrawScore();
@@ -248,37 +249,6 @@ public class LevelToolWindow : EditorWindow
             _currentLevelData.towerPrefabName = towerPrefab.name;
     }
 
-    private void DrawAvailableObjects()
-    {
-        GUILayout.Label("=== AVAILABLE OBJECT ===", EditorStyles.boldLabel);
-
-        if (_currentLevelData.towerAvailableData == null)
-        {
-            if (GUILayout.Button("Create Available Object"))
-                _currentLevelData.towerAvailableData = new TowerAvailableData();
-            return;
-        }
-
-        var data = _currentLevelData.towerAvailableData;
-
-        EditorGUILayout.BeginVertical("box");
-
-        GameObject prefab = null;
-        if (!string.IsNullOrEmpty(data.prefabName))
-            prefab = AssetDatabase.LoadAssetAtPath<GameObject>($"Assets/Resources/Prefabs/Objects/{data.prefabName}.prefab");
-
-        prefab = (GameObject)EditorGUILayout.ObjectField("Prefab", prefab, typeof(GameObject), false);
-        if (prefab != null) data.prefabName = prefab.name;
-
-        data.position = EditorGUILayout.Vector3Field("Position", data.position);
-        data.rotationY = EditorGUILayout.FloatField("Rotation Y", data.rotationY);
-
-        if (GUILayout.Button("Remove"))
-            _currentLevelData.towerAvailableData = null;
-
-        EditorGUILayout.EndVertical();
-    }
-
     private void DrawScore()
     {
         if (_currentLevelData.scoreUpgrades == null)
@@ -301,7 +271,6 @@ public class LevelToolWindow : EditorWindow
             EditorGUILayout.EndHorizontal();
         }
     }
-
     //-------------------------------------- UTILS ------------------------------------------------
     private void RefreshMapList()
     {
@@ -379,7 +348,6 @@ public class LevelToolWindow : EditorWindow
 
         Debug.Log($"Saved Level {_currentLevelData.levelNumber} with {_currentLevelData.prefabNames.Count} objects.");
     }
-
     private void SpawnPixelObjectInScene(string jsonName)
     {
         TextAsset txt = Resources.Load<TextAsset>($"Prefabs/Objects/{Path.GetFileNameWithoutExtension(jsonName)}");
@@ -392,18 +360,27 @@ public class LevelToolWindow : EditorWindow
         PixelMapJSON map = JsonUtility.FromJson<PixelMapJSON>(txt.text);
 
         GameObject parent = new GameObject("PixelObject_" + jsonName);
-        Material sharedMat = new Material(Shader.Find("Universal Render Pipeline/Lit"));
+
+        if (_pixelSharedMaterial == null)
+            _pixelSharedMaterial = new Material(Shader.Find("Universal Render Pipeline/Lit"));
 
         foreach (var pixel in map.pixels)
         {
-            Vector3 pos = new Vector3(pixel.x, pixel.y, pixel.z);
+            Vector3 pos = new Vector3(pixel.x, 0, pixel.z);
             GameObject cube = GameObject.CreatePrimitive(PrimitiveType.Cube);
+
+            var breakable = cube.AddComponent<BreakableCube>();
+            breakable.maxHP = _currentLevelData.breakableMaxHP;
+
             cube.transform.position = pos;
             cube.transform.parent = parent.transform;
 
             Renderer r = cube.GetComponent<Renderer>();
-            r.material = sharedMat;
-            r.material.color = new Color(pixel.r, pixel.g, pixel.b, pixel.a);
+            r.sharedMaterial = _pixelSharedMaterial;
+
+            MaterialPropertyBlock mpb = new MaterialPropertyBlock();
+            mpb.SetColor("_BaseColor", new Color(pixel.r, pixel.g, pixel.b, pixel.a));
+            r.SetPropertyBlock(mpb);
         }
 
         Undo.RegisterCreatedObjectUndo(parent, "Spawn Pixel Object");

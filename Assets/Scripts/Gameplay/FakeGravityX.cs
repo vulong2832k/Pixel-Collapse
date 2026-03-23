@@ -1,25 +1,40 @@
-using UnityEngine;
+﻿using UnityEngine;
 
+[RequireComponent(typeof(Rigidbody))]
 public class FakeGravityX : MonoBehaviour
 {
-    public float gravity = 20f;
-    public float velocity = 0f;
+    public float gravity = 10f;
     public float stopX = 0f;
 
-    void Update()
+    private Rigidbody _rb;
+
+    void Awake()
     {
-        velocity += gravity * Time.deltaTime;
+        _rb = GetComponent<Rigidbody>();
 
-        transform.position += Vector3.left * velocity * Time.deltaTime;
+        _rb.useGravity = false;
+        _rb.constraints = RigidbodyConstraints.FreezePositionY | 
+            RigidbodyConstraints.FreezeRotationX |
+            RigidbodyConstraints.FreezeRotationZ;
+        _rb.collisionDetectionMode = CollisionDetectionMode.ContinuousDynamic;
+    }
 
-        if (transform.position.x <= stopX)
+    void FixedUpdate()
+    {
+        if (_rb.isKinematic) return;
+
+        Vector3 vel = _rb.velocity;
+        vel.x = -gravity;
+        _rb.velocity = vel;
+
+        if (_rb.position.x <= stopX)
         {
-            Vector3 pos = transform.position;
+            Vector3 pos = _rb.position;
             pos.x = stopX;
-            transform.position = pos;
+            _rb.position = pos;
 
-            velocity = 0f;
-            enabled = false;
+            _rb.velocity = Vector3.zero;
+            _rb.isKinematic = true;
         }
     }
 }
