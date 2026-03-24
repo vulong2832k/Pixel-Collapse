@@ -8,7 +8,7 @@ public class LevelLoader : MonoBehaviour
     private LevelData _levelData;
 
     public TowerDatabase towerDatabase;
-
+    public MultiPool pool;
     void Start()
     {
         LoadLevel();
@@ -133,9 +133,6 @@ public class LevelLoader : MonoBehaviour
         rb.mass = 1000f;
         rb.constraints = RigidbodyConstraints.FreezePositionY | RigidbodyConstraints.FreezeRotationX | RigidbodyConstraints.FreezeRotationZ;
 
-        var fgParent = parent.AddComponent<FakeGravityX>();
-        fgParent.gravity = 4f;
-
         var runtime = parent.AddComponent<PixelObjectRuntime>();
 
         Material sharedMat = new Material(Shader.Find("Universal Render Pipeline/Lit"));
@@ -158,6 +155,7 @@ public class LevelLoader : MonoBehaviour
 
             var breakable = cube.AddComponent<BreakableCube>();
             breakable.maxHP = _levelData != null ? _levelData.breakableMaxHP : 10f;
+            breakable.Init(pool, "CubePrefab");
 
             runtime.RegisterCube(new Vector2Int((int)pixel.x, (int)pixel.z), cube);
         }

@@ -36,15 +36,12 @@ public class TowerAvailable : TowerBase
         transform.Rotate(0f, _rotationSpeed * Time.deltaTime, 0f, Space.World);
     }
 
-    private void OnTriggerEnter(Collider other)
+    private void OnTriggerStay(Collider other)
     {
         BreakableCube cube = other.GetComponent<BreakableCube>();
         if (cube != null)
         {
-            if (cube != null && cube.GetComponent<Rigidbody>() != null)
-            {
-                Destroy(cube.gameObject);
-            }
+            cube.TakeDamage(999f, transform);
         }
     }
 

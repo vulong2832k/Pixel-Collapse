@@ -215,7 +215,7 @@ public class PixelEditorWindow : EditorWindow
         GUILayout.Space(10);
         GUILayout.Label("Grid (Top-Down, Z-X Plane)", EditorStyles.boldLabel);
 
-        for (int x = 0; x < _width; x++)
+        for (int x = _width - 1; x >= 0; x--)
         {
             GUILayout.BeginHorizontal();
 

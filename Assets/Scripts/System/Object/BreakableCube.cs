@@ -4,7 +4,7 @@
 public class BreakableCube : MonoBehaviour
 {
     [Header("Health")]
-    public float maxHP = 10f;
+    public float maxHP;
     [SerializeField] private float currentHP;
 
     [Header("Physics")]
@@ -15,11 +15,17 @@ public class BreakableCube : MonoBehaviour
     private bool _isBroken = false;
     private Rigidbody _rb;
 
+    private MultiPool _pool;
+    private string _poolId;
     void Awake()
     {
         currentHP = maxHP;
     }
-
+    public void Init(MultiPool pool, string poolId)
+    {
+        this._pool = pool;
+        this._poolId = poolId;
+    }
     void FixedUpdate()
     {
         if (_isBroken && _applyGravityX && _rb != null)
@@ -48,6 +54,15 @@ public class BreakableCube : MonoBehaviour
     {
         if (_isBroken) return;
         _isBroken = true;
+
+        if (_pool != null)
+        {
+            _pool.ReturnToPool(_poolId, gameObject);
+        }
+        else
+        {
+            Destroy(gameObject);
+        }
 
         transform.SetParent(null);
 

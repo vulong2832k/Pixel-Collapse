@@ -13,7 +13,7 @@ public class FakeGravityX : MonoBehaviour
         _rb = GetComponent<Rigidbody>();
 
         _rb.useGravity = false;
-        _rb.constraints = RigidbodyConstraints.FreezePositionY | 
+        _rb.constraints = RigidbodyConstraints.FreezePositionY |
             RigidbodyConstraints.FreezeRotationX |
             RigidbodyConstraints.FreezeRotationZ;
         _rb.collisionDetectionMode = CollisionDetectionMode.ContinuousDynamic;

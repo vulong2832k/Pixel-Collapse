@@ -12,6 +12,7 @@ GameObject:
   - component: {fileID: 4083389850883650896}
   - component: {fileID: 4975060524143353127}
   - component: {fileID: 7890932830692225292}
+  - component: {fileID: 1152020404160251710}
   m_Layer: 0
   m_Name: TowerEmpty
   m_TagString: Untagged
@@ -4032,7 +4033,7 @@ MonoBehaviour:
   m_PreserveMeshAssetOnDestroy: 0
   assetGuid: 
   m_Mesh: {fileID: 0}
-  m_VersionIndex: 8
+  m_VersionIndex: 26
   m_IsSelectable: 1
   m_SelectedFaces: 
   m_SelectedEdges: []
@@ -4045,3 +4046,24 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 6657490635573308233}
   m_Mesh: {fileID: 0}
+--- !u!65 &1152020404160251710
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6657490635573308233}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 2.5, y: 2.1574728, z: 2.1650639}
+  m_Center: {x: 0, y: 0, z: 0}
