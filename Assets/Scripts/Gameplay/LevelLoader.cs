@@ -9,8 +9,13 @@ public class LevelLoader : MonoBehaviour
 
     public TowerDatabase towerDatabase;
     public MultiPool pool;
+
+    //Event
+    public System.Action OnLevelLoaded;
+
     void Start()
     {
+
         LoadLevel();
 
         if (_levelData == null)
@@ -22,6 +27,7 @@ public class LevelLoader : MonoBehaviour
         SpawnTowers();
 
         StartCoroutine(SpawnObjectsRoutine());
+        OnLevelLoaded?.Invoke();
     }
 
     GameObject GetTowerPrefab(string name)
@@ -36,7 +42,10 @@ public class LevelLoader : MonoBehaviour
 
         return null;
     }
-
+    public LevelData GetLevelData()
+    {
+        return _levelData;
+    }
     void LoadLevel()
     {
         TextAsset levelJson = Resources.Load<TextAsset>($"Gameplay/Levels/Level_{levelNumber}");
@@ -156,6 +165,7 @@ public class LevelLoader : MonoBehaviour
             var breakable = cube.AddComponent<BreakableCube>();
             breakable.maxHP = _levelData != null ? _levelData.breakableMaxHP : 10f;
             breakable.Init(pool, "CubePrefab");
+            breakable.ResetCube();
 
             runtime.RegisterCube(new Vector2Int((int)pixel.x, (int)pixel.z), cube);
         }

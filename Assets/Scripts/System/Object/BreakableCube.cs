@@ -55,6 +55,8 @@ public class BreakableCube : MonoBehaviour
         if (_isBroken) return;
         _isBroken = true;
 
+        GiveXP();
+
         if (_pool != null)
         {
             _pool.ReturnToPool(_poolId, gameObject);
@@ -78,5 +80,24 @@ public class BreakableCube : MonoBehaviour
         _rb.AddForce(dir * force, ForceMode.Impulse);
 
         _applyGravityX = true;
+    }
+    public void ResetCube()
+    {
+        currentHP = maxHP;
+        _isBroken = false;
+        _applyGravityX = false;
+
+        if (_rb != null)
+        {
+            Destroy(_rb);
+            _rb = null;
+        }
+    }
+    private void GiveXP()
+    {
+        if (GameManager.Instance == null) return;
+
+        float xp = Random.Range(5f, 11f);
+        GameManager.Instance.AddXP(xp);
     }
 }
