@@ -5,7 +5,8 @@ public enum UpgradeType
     Damage,
     AttackSpeed,
     Range,
-    MultiShot
+    MultiShot,
+    AddTower
 }
 
 [CreateAssetMenu(menuName = "Game/Upgrade")]
@@ -15,4 +16,6 @@ public class UpgradeSO : ScriptableObject
     public string description;
     public UpgradeType type;
     public float value;
+    public Sprite icon;
+    public GameObject towerPrefab;
 }

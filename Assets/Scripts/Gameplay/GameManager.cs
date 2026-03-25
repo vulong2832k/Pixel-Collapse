@@ -44,6 +44,7 @@ public class GameManager : MonoBehaviour
         OnXPChanged?.Invoke(finishedXP, upgradeXP);
     }
 
+#if UNITY_EDITOR
     private void Update()
     {
         if (Input.GetKeyDown(KeyCode.Space))
@@ -51,6 +52,7 @@ public class GameManager : MonoBehaviour
             AddXP(xpGain);
         }
     }
+#endif
 
     public float GetFinishXP()
     {

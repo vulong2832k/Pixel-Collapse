@@ -26,7 +26,6 @@ public class RewardManager : MonoBehaviour
     {
         Time.timeScale = 0;
 
-        // 🎯 LẦN ĐẦU → CHỌN TOWER
         if (!hasGivenStartTower)
         {
             hasGivenStartTower = true;
@@ -38,7 +37,6 @@ public class RewardManager : MonoBehaviour
         }
     }
 
-    // TOWER REWARD
     void ShowTowerReward()
     {
         towerPickCount = 0;
@@ -82,7 +80,6 @@ public class RewardManager : MonoBehaviour
         return list.GetRange(0, count);
     }
 
-    // UPGRADE REWARD
     void ShowUpgradeReward()
     {
         var ups = GetRandomUpgrades(3);
@@ -120,7 +117,6 @@ public class RewardManager : MonoBehaviour
         return list.GetRange(0, count);
     }
 
-    // =========================
     void CloseReward()
     {
         Time.timeScale = 1;

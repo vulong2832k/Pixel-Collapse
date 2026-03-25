@@ -16,9 +16,4 @@ MonoBehaviour:
   - name: CircularSaw
     prefab: {fileID: 6885474034211938579, guid: e8d5b79f8930b0e41987ee5828d5f9ba,
       type: 3}
-  - name: TowerEmpty
-    prefab: {fileID: 6657490635573308233, guid: 3b0889fde28d1c843abf5b59520cfe5d,
-      type: 3}
-  - name: AvailableSaw
-    prefab: {fileID: 6885474034211938579, guid: 238b50dc7e9d4de428b951e86014204f,
-      type: 3}
+    icon: {fileID: 0}

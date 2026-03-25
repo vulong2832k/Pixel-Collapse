@@ -1,5 +1,36 @@
 %YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
+--- !u!1 &4647004560649970459
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 2906913849750230175}
+  m_Layer: 0
+  m_Name: PointWeapon
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &2906913849750230175
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4647004560649970459}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0.901, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 162219820726727204}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &6657490635573308233
 GameObject:
   m_ObjectHideFlags: 0
@@ -13,6 +44,7 @@ GameObject:
   - component: {fileID: 4975060524143353127}
   - component: {fileID: 7890932830692225292}
   - component: {fileID: 1152020404160251710}
+  - component: {fileID: -4158666638732107718}
   m_Layer: 0
   m_Name: TowerEmpty
   m_TagString: Untagged
@@ -32,7 +64,8 @@ Transform:
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
-  m_Children: []
+  m_Children:
+  - {fileID: 2906913849750230175}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!23 &4083389850883650896
@@ -4067,3 +4100,17 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 2.5, y: 2.1574728, z: 2.1650639}
   m_Center: {x: 0, y: 0, z: 0}
+--- !u!114 &-4158666638732107718
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6657490635573308233}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9e89cb6cc02011642acc56e4979f34eb, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  isOccupied: 0
+  towerPoint: {fileID: 2906913849750230175}

@@ -112,30 +112,13 @@ public class BreakableCube : MonoBehaviour
     {
         if (GameManager.Instance == null) return;
 
+        //Mặc định cho dàn cưa dưới cùng rớt xp và hủy cube
+        if (attacker == null || attacker.GetComponent<TowerAvailable>() == null)
+            return;
+
         float xp = Random.Range(5f, 11f);
 
         GameManager.Instance.HandleXPAndCoin(xp, _pool, attacker);
-    }
-
-    private void SpawnCoin(string coinId, Transform attacker)
-    {
-        if (_pool == null) return;
-
-        Vector3 spawnPos = GetRandomSpawnPosition();
-
-        GameObject coin = _pool.GetFromPool(
-            coinId,
-            spawnPos,
-            Quaternion.identity
-        );
-
-        if (coin == null) return;
-
-        Coin c = coin.GetComponent<Coin>();
-        if (c != null)
-        {
-            c.Init(_pool, coinId, attacker);
-        }
     }
 
     private Vector3 GetRandomSpawnPosition()
