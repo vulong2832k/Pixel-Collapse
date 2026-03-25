@@ -41,7 +41,7 @@ public class TowerAvailable : TowerBase
         BreakableCube cube = other.GetComponent<BreakableCube>();
         if (cube != null)
         {
-            cube.TakeDamage(999f, transform);
+            cube.TakeDamage(GetDamage(), transform);
         }
     }
 
@@ -49,13 +49,13 @@ public class TowerAvailable : TowerBase
     {
         if (cube != null)
         {
-            cube.TakeDamage(999f, transform);
+            cube.TakeDamage(GetDamage(), transform);
         }
     }
 
     private void OnDrawGizmosSelected()
     {
         Gizmos.color = new Color(1f, 0f, 0f, 0.3f);
-        Gizmos.DrawWireSphere(transform.position, range);
+        Gizmos.DrawWireSphere(transform.position, GetRange());
     }
 }

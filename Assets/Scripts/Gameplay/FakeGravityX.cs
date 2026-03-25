@@ -4,7 +4,6 @@
 public class FakeGravityX : MonoBehaviour
 {
     public float gravity = 10f;
-    public float stopX = 0f;
 
     private Rigidbody _rb;
 
@@ -27,14 +26,10 @@ public class FakeGravityX : MonoBehaviour
         vel.x = -gravity;
         _rb.velocity = vel;
 
-        if (_rb.position.x <= stopX)
-        {
-            Vector3 pos = _rb.position;
-            pos.x = stopX;
-            _rb.position = pos;
+        Vector3 pos = _rb.position;
+        _rb.position = pos;
 
-            _rb.velocity = Vector3.zero;
-            _rb.isKinematic = true;
-        }
+        _rb.velocity = Vector3.zero;
+        _rb.isKinematic = true;
     }
 }

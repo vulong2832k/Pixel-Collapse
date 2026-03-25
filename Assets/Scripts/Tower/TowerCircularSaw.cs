@@ -29,9 +29,17 @@ public class TowerCircularSaw : TowerBase
     }
     private void OnDrawGizmos()
     {
-        Gizmos.color = new Color(1f, 0f, 0f, 0.3f);
-        Gizmos.DrawWireSphere(transform.position, range);
-        Gizmos.color = new Color(1f, 0f, 0f, 0.1f);
-        Gizmos.DrawSphere(transform.position, range);
+        if (Application.isPlaying)
+        {
+            Gizmos.color = new Color(1f, 0f, 0f, 0.3f);
+            Gizmos.DrawWireSphere(transform.position, GetRange());
+
+            Gizmos.color = new Color(1f, 0f, 0f, 0.1f);
+            Gizmos.DrawSphere(transform.position, GetRange());
+        }
+        else
+        {
+            Gizmos.DrawWireSphere(transform.position, baseRange);
+        }
     }
 }

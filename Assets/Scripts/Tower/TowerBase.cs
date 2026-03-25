@@ -7,19 +7,23 @@ public interface ITower
 
 public abstract class TowerBase : MonoBehaviour, ITower
 {
-    [Header("Tower Stats")]
-    public float damage = 10f;
-    public float attackRate = 0.5f;
-    public float range = 5f;
+    [Header("Base Stats")]
+    public float baseDamage;
+    public float baseAttackRate;
+    public float baseRange;
 
     protected float _nextAttackTime;
 
     protected virtual void Update()
     {
+        if (TowerManager.Instance == null) return;
+
+        float finalAttackRate = GetAttackRate();
+
         if (Time.time >= _nextAttackTime)
         {
             Attack();
-            _nextAttackTime = Time.time + attackRate;
+            _nextAttackTime = Time.time + finalAttackRate;
         }
     }
 
@@ -27,20 +31,32 @@ public abstract class TowerBase : MonoBehaviour, ITower
 
     protected Collider[] GetTargets()
     {
-        return Physics.OverlapSphere(transform.position, range);
+        return Physics.OverlapSphere(transform.position, GetRange());
     }
 
     protected void DamageCube(BreakableCube cube)
     {
         if (cube != null)
         {
-            cube.TakeDamage(damage, transform);
+            cube.TakeDamage(GetDamage());
         }
     }
 
-    private void OnDrawGizmosSelected()
+    // ====== FINAL STATS ======
+
+    protected float GetDamage()
     {
-        Gizmos.color = Color.red;
-        Gizmos.DrawWireSphere(transform.position, range);
+        if (TowerManager.Instance == null) return baseDamage;
+        return baseDamage * TowerManager.Instance.damageMultiplier;
+    }
+
+    protected float GetAttackRate()
+    {
+        return baseAttackRate / TowerManager.Instance.attackSpeedMultiplier;
+    }
+
+    protected float GetRange()
+    {
+        return baseRange * TowerManager.Instance.rangeMultiplier;
     }
 }

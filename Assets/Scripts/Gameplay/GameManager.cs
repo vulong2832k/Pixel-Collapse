@@ -10,7 +10,13 @@ public class GameManager : MonoBehaviour
     public float upgradeXP;
     public float xpGain;
 
+    [Header("Coin")]
+    private int _smallXpCounter = 0;
+    private int _bigXpCounter = 0;
+
+    //Event
     public Action<float, float> OnXPChanged;
+    public Action<int> OnUpgradeLevelUp;
 
     private LevelData _levelData;
     private int _currentUpgradeLevel = 0;
@@ -85,11 +91,13 @@ public class GameManager : MonoBehaviour
 
         if (upgradeXP >= needXP)
         {
-            Debug.Log("Level Up");
-
             upgradeXP -= needXP;
             _currentUpgradeLevel++;
+
+            UpgradeUIManager.Instance.Show();
         }
+
+        OnUpgradeLevelUp?.Invoke(_currentUpgradeLevel);
     }
 
     void CheckFinish()
@@ -99,6 +107,48 @@ public class GameManager : MonoBehaviour
         if (finishedXP >= _levelData.scoreToFinish)
         {
             Debug.Log("Victory");
+        }
+    }
+    public void HandleXPAndCoin(float xp, MultiPool pool, Transform attacker)
+    {
+        AddXP(xp);
+
+        if (xp <= 8f)
+        {
+            _smallXpCounter++;
+            if (_smallXpCounter >= 5)
+            {
+                SpawnCoin("coin_small", pool, attacker);
+                _smallXpCounter = 0;
+            }
+        }
+        else
+        {
+            _bigXpCounter++;
+            if (_bigXpCounter >= 5)
+            {
+                SpawnCoin("coin_big", pool, attacker);
+                _bigXpCounter = 0;
+            }
+        }
+    }
+
+    private void SpawnCoin(string coinId, MultiPool pool, Transform attacker)
+    {
+        Vector3 spawnPos = new Vector3(6f, 1.8f, UnityEngine.Random.Range(8f, 23f));
+
+        GameObject coin = pool.GetFromPool(
+            coinId,
+            spawnPos,
+            Quaternion.identity
+        );
+
+        if (coin == null) return;
+
+        Coin c = coin.GetComponent<Coin>();
+        if (c != null)
+        {
+            c.Init(pool, coinId, attacker);
         }
     }
 }

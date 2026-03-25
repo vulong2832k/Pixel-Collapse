@@ -1,4 +1,5 @@
 ﻿using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 
 public class LevelLoader : MonoBehaviour
@@ -9,6 +10,10 @@ public class LevelLoader : MonoBehaviour
 
     public TowerDatabase towerDatabase;
     public MultiPool pool;
+
+    [SerializeField] private GameObject _towerPlatformPrefab;
+
+    private List<TowerPlatform> _platforms = new List<TowerPlatform>();
 
     //Event
     public System.Action OnLevelLoaded;
@@ -94,14 +99,12 @@ public class LevelLoader : MonoBehaviour
     {
         if (_levelData == null) return;
 
-        GameObject prefab = GetTowerPrefab(_levelData.towerPrefabName);
-
-        if (prefab == null)
-            return;
-
         foreach (var pos in _levelData.towerPos)
         {
-            Instantiate(prefab, pos, Quaternion.identity);
+            GameObject obj = Instantiate(this._towerPlatformPrefab, pos, Quaternion.identity);
+            TowerPlatform platform = obj.GetComponent<TowerPlatform>();
+
+            _platforms.Add(platform);
         }
     }
 

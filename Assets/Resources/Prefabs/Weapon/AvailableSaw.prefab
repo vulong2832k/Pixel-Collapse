@@ -181,9 +181,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0052a0be3d2f43348ab3fb5d2254004b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  damage: 10
-  attackRate: 0.5
-  range: 2.5
+  baseDamage: 10
+  baseAttackRate: 0.1
+  baseRange: 4
   _rotationSpeed: 180
 --- !u!65 &6630127610478539318
 BoxCollider:
