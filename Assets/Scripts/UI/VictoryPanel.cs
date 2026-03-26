@@ -8,50 +8,37 @@ public class VictoryPanel : MonoBehaviour
     [SerializeField] private Button _replayButton;
     [SerializeField] private Button _nextButton;
 
-    private LevelLoader _levelLoader;
-
     private void Awake()
     {
-        _levelLoader = FindObjectOfType<LevelLoader>();
         Hide();
 
         _replayButton.onClick.AddListener(() =>
         {
-            if (_levelLoader != null)
-                _levelLoader.ReloadCurrentLevel();
+            SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
             Hide();
         });
 
         _nextButton.onClick.AddListener(() =>
         {
-            if (_levelLoader != null)
+            int nextSceneIndex = SceneManager.GetActiveScene().buildIndex + 1;
+            if (nextSceneIndex < SceneManager.sceneCountInBuildSettings)
             {
-                int currentIndex = SceneManager.GetActiveScene().buildIndex;
-                int totalLevels = SceneManager.sceneCountInBuildSettings;
-
-                if (currentIndex < totalLevels - 1)
-                {
-                    _levelLoader.LoadNextLevel();
-                }
-                else
-                {
-                    Debug.Log("Hết level rồi bro!");
-                }
+                SceneManager.LoadScene(nextSceneIndex);
             }
-
+            else
+            {
+                Debug.Log("No more scenes in build settings!");
+            }
             Hide();
         });
     }
+
     private void Start()
     {
-        int currentIndex = SceneManager.GetActiveScene().buildIndex;
-        int totalLevels = SceneManager.sceneCountInBuildSettings;
-
-        if (currentIndex >= totalLevels - 1)
-        {
-            _nextButton.interactable = false;
-        }
+        int nextSceneIndex = SceneManager.GetActiveScene().buildIndex + 1;
+        _nextButton.interactable = nextSceneIndex < SceneManager.sceneCountInBuildSettings;
     }
+
     public void Show()
     {
         _canvasGroup.alpha = 1f;

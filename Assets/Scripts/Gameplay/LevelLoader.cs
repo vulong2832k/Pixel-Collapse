@@ -4,7 +4,9 @@ using UnityEngine;
 
 public class LevelLoader : MonoBehaviour
 {
-    public int levelNumber = 1;
+    public int totalLevels = 5;
+    [SerializeField] private int _currentLevel = 1;   // level hiện tại
+    public int CurrentLevel => _currentLevel;
 
     private LevelData _levelData;
 
@@ -12,70 +14,75 @@ public class LevelLoader : MonoBehaviour
     public MultiPool pool;
 
     [SerializeField] private GameObject _towerPlatformPrefab;
-
     private List<TowerPlatform> _platforms = new List<TowerPlatform>();
 
-    //Event
+    // Event
     public System.Action OnLevelLoaded;
 
-    void Start()
+    private void Start()
     {
+        LoadLevelInternal(_currentLevel);
+    }
 
+    public bool HasNextLevel() => _currentLevel < totalLevels;
+
+    public void ReloadCurrentLevel()
+    {
+        LoadLevelInternal(_currentLevel);
+    }
+
+    public void LoadNextLevel()
+    {
+        if (!HasNextLevel()) return;
+
+        _currentLevel++;
+        LoadLevelInternal(_currentLevel);
+    }
+
+    private void LoadLevelInternal(int levelNum)
+    {
+        foreach (var obj in FindObjectsOfType<PixelObjectRuntime>())
+            Destroy(obj.gameObject);
+
+        foreach (var platform in _platforms)
+            Destroy(platform.gameObject);
+        _platforms.Clear();
+
+        _currentLevel = levelNum;
         LoadLevel();
-
-        if (_levelData == null)
+        if (_levelData != null)
         {
-            return;
+            LoadMap(_levelData.levelNumber);
+            SpawnTowers();
+
+            StopAllCoroutines();
+            StartCoroutine(SpawnObjectsRoutine());
+
+            OnLevelLoaded?.Invoke();
         }
-
-        LoadMap(_levelData.levelNumber);
-        SpawnTowers();
-
-        StartCoroutine(SpawnObjectsRoutine());
-        OnLevelLoaded?.Invoke();
-    }
-
-    GameObject GetTowerPrefab(string name)
-    {
-        if (towerDatabase == null) return null;
-
-        foreach (var t in towerDatabase.towers)
+        else
         {
-            if (t.name == name)
-                return t.prefab;
+            Debug.LogError($"Level {levelNum} không tồn tại!");
         }
+    }
 
-        return null;
-    }
-    public LevelData GetLevelData()
-    {
-        return _levelData;
-    }
     void LoadLevel()
     {
-        TextAsset levelJson = Resources.Load<TextAsset>($"Gameplay/Levels/Level_{levelNumber}");
-
+        TextAsset levelJson = Resources.Load<TextAsset>($"Gameplay/Levels/Level_{_currentLevel}");
         if (levelJson == null)
         {
-            Debug.LogError("Không tìm thấy Level");
+            _levelData = null;
             return;
         }
-
         _levelData = JsonUtility.FromJson<LevelData>(levelJson.text);
     }
 
     void LoadMap(int mapNumber)
     {
         TextAsset mapJson = Resources.Load<TextAsset>($"Gameplay/Maps/Map_{mapNumber}");
-
-        if (mapJson == null)
-        {
-            Debug.LogError("Không tìm thấy Map");
-            return;
-        }
+        if (mapJson == null) return;
 
         PixelMapJSON map = JsonUtility.FromJson<PixelMapJSON>(mapJson.text);
-
         SpawnMap(map);
     }
 
@@ -84,7 +91,6 @@ public class LevelLoader : MonoBehaviour
         foreach (var pixel in map.pixels)
         {
             Vector3 pos = new Vector3(pixel.x + 30, pixel.y, pixel.z);
-
             GameObject cube = GameObject.CreatePrimitive(PrimitiveType.Cube);
             cube.transform.position = pos;
 
@@ -101,9 +107,8 @@ public class LevelLoader : MonoBehaviour
 
         foreach (var pos in _levelData.towerPos)
         {
-            GameObject obj = Instantiate(this._towerPlatformPrefab, pos, Quaternion.identity);
+            GameObject obj = Instantiate(_towerPlatformPrefab, pos, Quaternion.identity);
             TowerPlatform platform = obj.GetComponent<TowerPlatform>();
-
             _platforms.Add(platform);
         }
     }
@@ -119,7 +124,6 @@ public class LevelLoader : MonoBehaviour
         {
             string objName = _levelData.prefabNames[Random.Range(0, _levelData.prefabNames.Count)];
             SpawnPixelObject(objName);
-
             yield return new WaitForSeconds(5f);
         }
     }
@@ -152,11 +156,11 @@ public class LevelLoader : MonoBehaviour
         foreach (var pixel in map.pixels)
         {
             Vector3 localPos = new Vector3(pixel.x, 0, pixel.z);
-
             GameObject cube = GameObject.CreatePrimitive(PrimitiveType.Cube);
             cube.transform.SetParent(parent.transform);
             cube.transform.localPosition = localPos;
             cube.transform.localScale = Vector3.one * 0.95f;
+            cube.tag = "Cube";
             cube.layer = LayerMask.NameToLayer("Pixel");
 
             Renderer r = cube.GetComponent<Renderer>();
@@ -173,21 +177,6 @@ public class LevelLoader : MonoBehaviour
             runtime.RegisterCube(new Vector2Int((int)pixel.x, (int)pixel.z), cube);
         }
     }
-    public void ReloadCurrentLevel()
-    {
-        if (_levelData != null)
-        {
-            levelNumber = _levelData.levelNumber;
-            UnityEngine.SceneManagement.SceneManager.LoadScene(UnityEngine.SceneManagement.SceneManager.GetActiveScene().name);
-        }
-    }
 
-    public void LoadNextLevel()
-    {
-        if (_levelData != null)
-        {
-            levelNumber = _levelData.levelNumber + 1;
-            UnityEngine.SceneManagement.SceneManager.LoadScene(UnityEngine.SceneManagement.SceneManager.GetActiveScene().name);
-        }
-    }
+    public LevelData GetLevelData() => _levelData;
 }

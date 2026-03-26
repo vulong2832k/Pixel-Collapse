@@ -28,19 +28,19 @@
             "z": 15.0
         }
     ],
-    "scoreToFinish": 35000,
+    "scoreToFinish": 6000,
     "scoreUpgrades": [
         500,
         1000,
-        1500,
         2000,
-        2500,
-        3000,
-        3500,
-        4000,
-        4500,
-        5000,
-        5500
+        10000,
+        500,
+        500,
+        500,
+        500,
+        500,
+        500,
+        500
     ],
     "breakableMaxHP": 10.0,
     "towerPrefabName": "TowerEmpty",

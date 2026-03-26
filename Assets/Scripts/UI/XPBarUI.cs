@@ -5,30 +5,16 @@ using TMPro;
 
 public class XPBarUI : MonoBehaviour
 {
-    public Image xpFinishImage;
-    public Image xpUpgradeImage;
+    [Header("XP Bars")]
+    public Image xpFinishImage;   // XP để finish level
+    public Image xpUpgradeImage;  // XP để upgrade level
+
+    [Header("Level Text")]
     public TMP_Text levelText;
 
     private void OnEnable()
     {
         StartCoroutine(InitRoutine());
-    }
-
-    IEnumerator InitRoutine()
-    {
-        yield return null;// Chờ 1 frame cho cái GameManager load cái file json xong
-
-        if (GameManager.Instance != null)
-        {
-            GameManager.Instance.OnXPChanged += UpdateXPBar;
-
-            UpdateXPBar(
-                GameManager.Instance.finishedXP,
-                GameManager.Instance.upgradeXP
-            );
-        }
-
-        UpdateLevelText();
     }
 
     private void OnDisable()
@@ -39,20 +25,44 @@ public class XPBarUI : MonoBehaviour
         }
     }
 
+    IEnumerator InitRoutine()
+    {
+        // Chờ 1 frame để GameManager load xong levelData
+        yield return null;
+
+        if (GameManager.Instance != null)
+        {
+            // Đăng ký event
+            GameManager.Instance.OnXPChanged += UpdateXPBar;
+
+            // Cập nhật ban đầu
+            UpdateXPBar(
+                GameManager.Instance.finishedXP,
+                GameManager.Instance.upgradeXP
+            );
+
+            UpdateLevelText();
+        }
+    }
+
     void UpdateXPBar(float totalXP, float upgradeXP)
     {
         var gm = GameManager.Instance;
         if (gm == null) return;
 
+        // Lấy XP cần để finish level
         float finishXP = gm.GetFinishXP();
+        // Lấy XP còn thiếu để upgrade level tiếp theo
         float upgradeXPMax = gm.GetUpgradeXPRequired();
 
-        if (xpFinishImage != null && finishXP > 0)
+        // Fill bar XP hoàn thành level
+        if (xpFinishImage != null && finishXP > 0f)
         {
             xpFinishImage.fillAmount = Mathf.Clamp01(totalXP / finishXP);
         }
 
-        if (xpUpgradeImage != null && upgradeXPMax > 0)
+        // Fill bar XP upgrade
+        if (xpUpgradeImage != null && upgradeXPMax > 0f)
         {
             xpUpgradeImage.fillAmount = Mathf.Clamp01(upgradeXP / upgradeXPMax);
         }
@@ -63,7 +73,8 @@ public class XPBarUI : MonoBehaviour
         var gm = GameManager.Instance;
         if (gm == null || levelText == null) return;
 
-        int level = gm.levelLoader.levelNumber;
+        // Lấy level hiện tại từ LevelLoader
+        int level = gm.levelLoader != null ? gm.levelLoader.CurrentLevel : 1;
 
         levelText.text = $"Level {level}";
     }

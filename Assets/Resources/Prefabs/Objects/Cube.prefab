@@ -17,7 +17,7 @@ GameObject:
   - component: {fileID: 5428046205621061965}
   m_Layer: 7
   m_Name: Cube
-  m_TagString: Untagged
+  m_TagString: Cube
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -121,7 +121,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   gravity: 20
-  stopX: 0
 --- !u!54 &5573321579553305749
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -161,4 +160,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5e240ab748b11b045bb550177772a61e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  maxHP: 0
+  currentHP: 0
   force: 5
+  gravityX: 6
+  spawnAreaSize: {x: 0, y: 0, z: 0}
