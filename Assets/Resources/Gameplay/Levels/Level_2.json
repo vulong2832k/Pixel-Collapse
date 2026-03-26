@@ -1,0 +1,64 @@
+{
+    "levelNumber": 2,
+    "spawnStart": {
+        "x": 79.0,
+        "y": 1.399999976158142,
+        "z": 22.0
+    },
+    "spawnEnd": {
+        "x": 79.0,
+        "y": 1.399999976158142,
+        "z": 13.0
+    },
+    "prefabNames": [
+        "Apple",
+        "Avocado",
+        "Redstone",
+        "Star",
+        "Lapis",
+        "Coin",
+        "Emerald",
+        "Heart"
+    ],
+    "towerPos": [
+        {
+            "x": 30.0,
+            "y": 0.5,
+            "z": 30.0
+        },
+        {
+            "x": 25.0,
+            "y": 0.5,
+            "z": 27.0
+        },
+        {
+            "x": 25.0,
+            "y": 0.5,
+            "z": 15.0
+        },
+        {
+            "x": 30.0,
+            "y": 0.5,
+            "z": 8.0
+        }
+    ],
+    "scoreToFinish": 60000,
+    "scoreUpgrades": [
+        1000,
+        1500,
+        2200,
+        3000,
+        4400,
+        5000,
+        6000,
+        7500,
+        8000,
+        9000,
+        10000
+    ],
+    "breakableMaxHP": 25.0,
+    "towerPrefabName": "TowerEmpty",
+    "towerDamage": 0.0,
+    "towerAttackRate": 0.0,
+    "towerRange": 0.0
+}

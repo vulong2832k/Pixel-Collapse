@@ -12,10 +12,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 13c169c2474b1cc439e44950b4551969, type: 3}
   m_Name: AddTower
   m_EditorClassIdentifier: 
-  upgradeName: "Th\xEAm th\xE1p"
-  description: "Th\xE1p c\u01B0a"
+  upgradeName: Add Saw
+  description: Add 2 Saw Tower
   type: 4
   value: 2
-  icon: {fileID: 21300000, guid: 4f39df782ef9b7a48bb0eaeb253eb1aa, type: 3}
+  icon: {fileID: 21300000, guid: bc29390a42f41df468bd87a9198b8b78, type: 3}
   towerPrefab: {fileID: 6885474034211938579, guid: e8d5b79f8930b0e41987ee5828d5f9ba,
     type: 3}

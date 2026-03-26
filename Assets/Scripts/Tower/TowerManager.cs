@@ -14,4 +14,11 @@ public class TowerManager : MonoBehaviour
     {
         Instance = this;
     }
+    public void ResetStats()
+    {
+        damageMultiplier = 1f;
+        attackSpeedMultiplier = 1f;
+        rangeMultiplier = 1f;
+        multiShot = 1;
+    }
 }

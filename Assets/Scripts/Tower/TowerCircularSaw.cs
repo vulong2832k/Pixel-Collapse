@@ -19,7 +19,7 @@ public class TowerCircularSaw : TowerBase
             BreakableCube cube = hit.GetComponent<BreakableCube>();
             if (cube != null)
             {
-                DamageCube(cube);
+                cube.TakeDamage(GetDamage(), transform, DamageType.Separate);
             }
         }
     }

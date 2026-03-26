@@ -1,5 +1,6 @@
 ﻿using System;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class GameManager : MonoBehaviour
 {
@@ -14,6 +15,20 @@ public class GameManager : MonoBehaviour
     private int _smallXpCounter = 0;
     private int _bigXpCounter = 0;
 
+    [Header("UI")]
+    public VictoryPanel victoryPanel;
+
+    [Header("Start Panel")]
+    [SerializeField] private GameObject startPanel;
+    [SerializeField] private Button playButton;
+
+    [Header("Audio")]
+    [SerializeField] private AudioSource sfxSource;
+
+    [SerializeField] private AudioClip _levelUpSound;
+    [SerializeField] private AudioClip _victorySound;
+    [SerializeField] private AudioClip _startSound;
+
     //Event
     public Action<float, float> OnXPChanged;
     public Action<int> OnUpgradeLevelUp;
@@ -27,10 +42,25 @@ public class GameManager : MonoBehaviour
     {
         Instance = this;
 
+        Time.timeScale = 0f;
+
         if (levelLoader != null)
         {
             levelLoader.OnLevelLoaded += Init;
         }
+    }
+
+    private void Start()
+    {
+        // Hiện panel
+        if (startPanel != null)
+            startPanel.SetActive(true);
+
+        // Gán nút Play
+        if (playButton != null)
+            playButton.onClick.AddListener(StartGame);
+
+        TowerManager.Instance.ResetStats();
     }
 
     void Init()
@@ -78,13 +108,13 @@ public class GameManager : MonoBehaviour
 
     public void AddXP(float amount)
     {
-        this.finishedXP += amount;
-        this.upgradeXP += amount;
+        finishedXP += amount;
+        upgradeXP += amount;
 
         CheckUpgrade();
         CheckFinish();
 
-        OnXPChanged?.Invoke(this.finishedXP, upgradeXP);
+        OnXPChanged?.Invoke(finishedXP, upgradeXP);
     }
 
     void CheckUpgrade()
@@ -95,6 +125,11 @@ public class GameManager : MonoBehaviour
         {
             upgradeXP -= needXP;
             _currentUpgradeLevel++;
+
+            if (sfxSource != null && _levelUpSound != null)
+            {
+                sfxSource.PlayOneShot(_levelUpSound);
+            }
 
             UpgradeUIManager.Instance.Show();
         }
@@ -109,8 +144,18 @@ public class GameManager : MonoBehaviour
         if (finishedXP >= _levelData.scoreToFinish)
         {
             Debug.Log("Victory");
+
+            if (victoryPanel != null)
+                victoryPanel.Show();
+
+            if (sfxSource != null && _victorySound != null)
+            {
+                sfxSource.PlayOneShot(_victorySound);
+            }
+            Time.timeScale = 0.1f;
         }
     }
+
     public void HandleXPAndCoin(float xp, MultiPool pool, Transform attacker)
     {
         AddXP(xp);
@@ -152,5 +197,18 @@ public class GameManager : MonoBehaviour
         {
             c.Init(pool, coinId, attacker);
         }
+    }
+
+    public void StartGame()
+    {
+        Time.timeScale = 1f;
+
+        if (sfxSource != null && _startSound != null)
+        {
+            sfxSource.PlayOneShot(_startSound);
+        }
+
+        if (startPanel != null)
+            startPanel.SetActive(false);
     }
 }

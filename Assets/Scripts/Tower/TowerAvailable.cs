@@ -8,6 +8,7 @@ public class TowerAvailable : TowerBase
 
     private void Awake()
     {
+        useGlobalUpgrade = false;
         Collider col = GetComponent<Collider>();
         col.isTrigger = true;
     }
@@ -41,21 +42,26 @@ public class TowerAvailable : TowerBase
         BreakableCube cube = other.GetComponent<BreakableCube>();
         if (cube != null)
         {
-            cube.TakeDamage(GetDamage(), transform);
+            cube.TakeDamage(GetDamage(), transform, DamageType.Destroy);
         }
     }
 
     protected new void DamageCube(BreakableCube cube)
     {
-        if (cube != null)
+        if (cube != null && cube.gameObject.activeInHierarchy)
         {
-            cube.TakeDamage(GetDamage(), transform);
+            cube.TakeDamage(GetDamage(), transform, DamageType.Destroy);
         }
     }
 
     private void OnDrawGizmosSelected()
     {
         Gizmos.color = new Color(1f, 0f, 0f, 0.3f);
-        Gizmos.DrawWireSphere(transform.position, GetRange());
+
+        float range = baseRange;
+        if (Application.isPlaying && TowerManager.Instance != null)
+            range = GetRange();
+
+        Gizmos.DrawWireSphere(transform.position, range);
     }
 }

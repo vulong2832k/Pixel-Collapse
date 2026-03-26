@@ -283,10 +283,14 @@ public class LevelToolWindow : EditorWindow
 
     private void LoadMapAndData(string mapPath)
     {
+        // Lấy số cuối của map
         string mapName = Path.GetFileNameWithoutExtension(mapPath);
+
+        // Parse số map phía sau "_"
         int mapNumber = 0;
         string[] parts = mapName.Split('_');
-        if (parts.Length > 1) int.TryParse(parts[1], out mapNumber);
+        if (parts.Length > 1)
+            int.TryParse(parts[1], out mapNumber);
 
         string levelPath = _levelFolder + $"Level_{mapNumber}.json";
 
@@ -297,8 +301,10 @@ public class LevelToolWindow : EditorWindow
         }
         else
         {
-            _currentLevelData = new LevelData { levelNumber = mapNumber };
+            _currentLevelData = new LevelData();
         }
+
+        _currentLevelData.levelNumber = mapNumber;
 
         if (_currentLevelData.prefabNames == null)
             _currentLevelData.prefabNames = new List<string>();
@@ -325,6 +331,8 @@ public class LevelToolWindow : EditorWindow
                 path = name
             });
         }
+
+        Debug.Log($"Loaded map {mapName} → Level_{mapNumber}.json");
     }
 
     private void SaveLevelData()

@@ -173,4 +173,21 @@ public class LevelLoader : MonoBehaviour
             runtime.RegisterCube(new Vector2Int((int)pixel.x, (int)pixel.z), cube);
         }
     }
+    public void ReloadCurrentLevel()
+    {
+        if (_levelData != null)
+        {
+            levelNumber = _levelData.levelNumber;
+            UnityEngine.SceneManagement.SceneManager.LoadScene(UnityEngine.SceneManagement.SceneManager.GetActiveScene().name);
+        }
+    }
+
+    public void LoadNextLevel()
+    {
+        if (_levelData != null)
+        {
+            levelNumber = _levelData.levelNumber + 1;
+            UnityEngine.SceneManagement.SceneManager.LoadScene(UnityEngine.SceneManagement.SceneManager.GetActiveScene().name);
+        }
+    }
 }

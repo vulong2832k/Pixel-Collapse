@@ -12,6 +12,8 @@ public abstract class TowerBase : MonoBehaviour, ITower
     public float baseAttackRate;
     public float baseRange;
 
+    [SerializeField] protected bool useGlobalUpgrade = true;
+
     protected float _nextAttackTime;
 
     protected virtual void Update()
@@ -46,17 +48,25 @@ public abstract class TowerBase : MonoBehaviour, ITower
 
     protected float GetDamage()
     {
-        if (TowerManager.Instance == null) return baseDamage;
+        if (!useGlobalUpgrade || TowerManager.Instance == null)
+            return baseDamage;
+
         return baseDamage * TowerManager.Instance.damageMultiplier;
     }
 
     protected float GetAttackRate()
     {
-        return baseAttackRate / TowerManager.Instance.attackSpeedMultiplier;
+        if (!useGlobalUpgrade || TowerManager.Instance == null)
+            return baseAttackRate;
+
+        return baseAttackRate * TowerManager.Instance.attackSpeedMultiplier;
     }
 
     protected float GetRange()
     {
+        if (!useGlobalUpgrade || TowerManager.Instance == null)
+            return baseRange;
+
         return baseRange * TowerManager.Instance.rangeMultiplier;
     }
 }

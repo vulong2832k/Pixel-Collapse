@@ -10,18 +10,22 @@ public static class UpgradeApplier
         {
             case UpgradeType.Damage:
                 TowerManager.Instance.damageMultiplier += up.value;
+                Debug.Log("Apply upgrade: " + up.type + " | value: " + up.value);
                 break;
 
             case UpgradeType.AttackSpeed:
                 TowerManager.Instance.attackSpeedMultiplier += up.value;
+                Debug.Log("Apply upgrade: " + up.type + " | value: " + up.value);
                 break;
 
             case UpgradeType.Range:
                 TowerManager.Instance.rangeMultiplier += up.value;
+                Debug.Log("Apply upgrade: " + up.type + " | value: " + up.value);
                 break;
 
             case UpgradeType.MultiShot:
                 TowerManager.Instance.multiShot += (int)up.value;
+                Debug.Log("Apply upgrade: " + up.type + " | value: " + up.value);
                 break;
         }
     }

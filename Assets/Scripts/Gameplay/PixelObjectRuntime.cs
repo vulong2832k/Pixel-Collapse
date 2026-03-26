@@ -33,4 +33,19 @@ public class PixelObjectRuntime : MonoBehaviour
     {
         return _cubes.TryGetValue(pos, out var cube) ? cube : null;
     }
+    public void OnCubeRemoved()
+    {
+        if (_cubes.Count == 0)
+        {
+            Destroy(gameObject);
+        }
+    }
+    public void RemoveCube(Vector2Int pos)
+    {
+        if (_cubes.ContainsKey(pos))
+        {
+            _cubes.Remove(pos);
+            OnCubeRemoved();
+        }
+    }
 }

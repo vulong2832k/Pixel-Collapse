@@ -1,5 +1,11 @@
 ﻿using UnityEngine;
 
+public enum DamageType
+{
+    Separate,
+    Destroy
+}
+
 [RequireComponent(typeof(Collider))]
 public class BreakableCube : MonoBehaviour
 {
@@ -8,8 +14,8 @@ public class BreakableCube : MonoBehaviour
     [SerializeField] private float currentHP;
 
     [Header("Physics")]
-    public float force = 1f;
-    public float gravityX = 6f;
+    public float force = .2f;
+    public float gravityX = 12f;
     private bool _applyGravityX = false;
 
     [Header("Coin Spawn")]
@@ -36,54 +42,159 @@ public class BreakableCube : MonoBehaviour
     {
         if (_isBroken && _applyGravityX && _rb != null)
         {
-            Vector3 vel = _rb.velocity;
-            if (vel.x > -gravityX)
+            _rb.AddForce(Vector3.left * gravityX, ForceMode.Acceleration);
+
+            _rb.velocity = new Vector3(Mathf.Clamp(_rb.velocity.x, -5f, 0f), 0f, _rb.velocity.z);
+
+            if (ShouldReturn())
             {
-                vel.x -= gravityX * Time.fixedDeltaTime;
-                _rb.velocity = vel;
+                ReturnSelf();
             }
         }
     }
-
-    public void TakeDamage(float dmg, Transform attacker = null)
+    private bool ShouldReturn()
     {
-        if (_isBroken) return;
+        if (transform.position.x < 80f)
+            return true;
+
+        if (_rb.velocity.magnitude < 0.05f)
+            return true;
+
+        return false;
+    }
+
+    public void TakeDamage(float dmg, Transform attacker = null, DamageType type = DamageType.Destroy)
+    {
+        if (_isBroken && type == DamageType.Destroy) return;
 
         currentHP -= dmg;
-        if (currentHP <= 0f)
+
+        if (type == DamageType.Destroy)
         {
-            Break(attacker);
+            if (currentHP <= 0f)
+                Break(attacker);
+        }
+        else
+        {
+            SeparatePiece(attacker);
         }
     }
 
     void Break(Transform attacker)
     {
-        if (_isBroken) return;
+        if (_isBroken || !gameObject.activeInHierarchy) return;
         _isBroken = true;
 
         GiveXP(attacker);
 
-        _rb = gameObject.AddComponent<Rigidbody>();
-        _rb.mass = 10f;
-        _rb.useGravity = false;
-        _rb.collisionDetectionMode = CollisionDetectionMode.ContinuousDynamic;
-        _rb.constraints = RigidbodyConstraints.FreezePositionY |
-                          RigidbodyConstraints.FreezeRotationX |
-                          RigidbodyConstraints.FreezeRotationZ;
+        transform.parent = null;
 
-        Vector3 dir = attacker != null
-            ? (transform.position - attacker.position).normalized
-            : Vector3.up;
+        Transform oldParent = transform.parent;
 
-        _rb.AddForce(dir * force, ForceMode.Impulse);
+        var runtime = oldParent != null
+            ? oldParent.GetComponent<PixelObjectRuntime>()
+            : null;
+
+        runtime?.OnCubeRemoved();
+
+        if (_rb == null)
+        {
+            _rb = gameObject.AddComponent<Rigidbody>();
+            _rb.mass = 10f;
+            _rb.useGravity = false;
+            _rb.collisionDetectionMode = CollisionDetectionMode.ContinuousDynamic;
+            _rb.constraints = RigidbodyConstraints.FreezePositionY |
+                              RigidbodyConstraints.FreezeRotationX |
+                              RigidbodyConstraints.FreezeRotationZ;
+        }
+
+        Vector3 dir = Vector3.right;
+
+        if (attacker != null)
+        {
+            dir = (transform.position - attacker.position).normalized;
+            dir.y = 0f;
+            dir.Normalize();
+        }
+
+        _rb.velocity = Vector3.zero;
+
+        Vector3 forceDir = dir + new Vector3(0f, 0f, Random.Range(-0.3f, 0.3f));
+        forceDir.Normalize();
+
+        forceDir.x = -Mathf.Abs(forceDir.x);
+
+        float appliedForce = force * 0.6f;
+
+        _rb.AddForce(forceDir * appliedForce, ForceMode.VelocityChange);
+
+        _rb.velocity = Vector3.ClampMagnitude(_rb.velocity, 2f);
 
         _applyGravityX = true;
+    }
+    private void SeparatePiece(Transform attacker)
+    {
+        if (_isBroken) return;
 
-        Invoke(nameof(ReturnSelf), 0.15f);
+        Transform oldParent = transform.parent;
+        var runtime = oldParent != null ? oldParent.GetComponent<PixelObjectRuntime>() : null;
+
+        transform.parent = null;
+
+        runtime?.OnCubeRemoved();
+
+        if (_rb == null)
+        {
+            _rb = gameObject.AddComponent<Rigidbody>();
+            _rb.mass = 5f;
+            _rb.useGravity = false;
+            _rb.collisionDetectionMode = CollisionDetectionMode.ContinuousDynamic;
+            _rb.constraints = RigidbodyConstraints.FreezePositionY |
+                              RigidbodyConstraints.FreezeRotationX |
+                              RigidbodyConstraints.FreezeRotationZ;
+        }
+
+        Vector3 dir;
+
+        if (attacker != null)
+        {
+            dir = (transform.position - attacker.position);
+        }
+        else
+        {
+            dir = new Vector3(Random.Range(-0.5f, 0.5f), 0f, Random.Range(-0.5f, 0.5f));
+        }
+
+        dir.y = 0f;
+        dir.Normalize();
+
+        _rb.velocity = Vector3.zero;
+
+        Vector3 forceDir = dir + new Vector3(0f, 0f, Random.Range(-0.3f, 0.3f));
+        forceDir.Normalize();
+
+        forceDir.x = -Mathf.Abs(forceDir.x);
+
+        float appliedForce = force * 0.5f;
+
+        _rb.AddForce(forceDir * appliedForce, ForceMode.VelocityChange);
+
+        _rb.velocity = Vector3.ClampMagnitude(_rb.velocity, 2f);
+
+        _applyGravityX = true;
     }
 
     void ReturnSelf()
     {
+        _applyGravityX = false;
+        _isBroken = false;
+
+        if (_rb != null)
+        {
+            _rb.velocity = Vector3.zero;
+            _rb.angularVelocity = Vector3.zero;
+        }
+
         if (_pool != null)
         {
             _pool.ReturnToPool(_poolId, gameObject);
@@ -112,22 +223,12 @@ public class BreakableCube : MonoBehaviour
     {
         if (GameManager.Instance == null) return;
 
-        //Mặc định cho dàn cưa dưới cùng rớt xp và hủy cube
         if (attacker == null || attacker.GetComponent<TowerAvailable>() == null)
             return;
 
         float xp = Random.Range(5f, 11f);
 
         GameManager.Instance.HandleXPAndCoin(xp, _pool, attacker);
-    }
-
-    private Vector3 GetRandomSpawnPosition()
-    {
-        float x = 6f;
-        float y = 1.8f;
-        float z = Random.Range(8f, 23f);
-
-        return new Vector3(x, y, z);
     }
     void OnDrawGizmosSelected()
     {

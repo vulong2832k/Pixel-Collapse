@@ -4,6 +4,8 @@ public class TowerPlacementController : MonoBehaviour
 {
     public static TowerPlacementController Instance;
 
+    [SerializeField] private TowerPlatform[] _platforms;
+
     private GameObject _selectedTower;
     private bool _isPlacing;
     private int _remainingPlaceCount;
@@ -20,13 +22,6 @@ public class TowerPlacementController : MonoBehaviour
         _cam = Camera.main;
     }
 
-    public void StartPlacing(GameObject prefab, int count)
-    {
-        _selectedTower = prefab;
-        _isPlacing = true;
-        _remainingPlaceCount = count;
-    }
-
     private void Update()
     {
         AddTower();
@@ -35,25 +30,63 @@ public class TowerPlacementController : MonoBehaviour
     {
         if (!_isPlacing) return;
 
+        Vector2 touchPos = Vector2.zero;
+        bool touchDetected = false;
+
+        // Mobile touch
+        if (Input.touchCount > 0)
+        {
+            Touch touch = Input.GetTouch(0);
+            if (touch.phase == TouchPhase.Began)
+            {
+                touchPos = touch.position;
+                touchDetected = true;
+            }
+        }
+
+        // PC mouse
         if (Input.GetMouseButtonDown(0))
         {
-            Ray ray = _cam.ScreenPointToRay(Input.mousePosition);
+            touchPos = Input.mousePosition;
+            touchDetected = true;
+        }
 
-            if (Physics.Raycast(ray, out RaycastHit hit))
+        if (!touchDetected) return;
+
+        Ray ray = _cam.ScreenPointToRay(touchPos);
+
+        if (Physics.Raycast(ray, out RaycastHit hit))
+        {
+            TowerPlatform platform = hit.collider.GetComponent<TowerPlatform>();
+
+            if (platform != null && !platform.IsOccupied)
             {
-                TowerPlatform platform = hit.collider.GetComponent<TowerPlatform>();
+                platform.PlaceTower(_selectedTower);
 
-                if (platform != null && !platform.IsOccupied)
+                _remainingPlaceCount--;
+
+                if (_remainingPlaceCount <= 0)
                 {
-                    platform.PlaceTower(_selectedTower);
-
-                    _remainingPlaceCount--;
-
-                    if (_remainingPlaceCount <= 0)
-                    {
-                        _isPlacing = false;
-                    }
+                    _isPlacing = false;
                 }
+            }
+        }
+    }
+    public void StartPlacing(GameObject prefab, int count)
+    {
+        _selectedTower = prefab;
+        _isPlacing = true;
+        _remainingPlaceCount = count;
+
+        UpdatePlatformHighlight(true);
+    }
+    private void UpdatePlatformHighlight(bool value)
+    {
+        foreach (var platform in _platforms)
+        {
+            if (platform != null && !platform.IsOccupied)
+            {
+                platform.SetHighlight(value);
             }
         }
     }
